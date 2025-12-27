@@ -56,3 +56,31 @@ Generating `FIREBASE_TOKEN`:
 Add `FIREBASE_APP_ID` from the Firebase console (Project settings → Your apps → App ID).
 
 After a successful workflow run, invited testers (or groups) will receive the new build via Firebase App Distribution.
+
+Publish/download directly from GitHub (optional)
+
+This repo now includes a workflow that creates a GitHub Release and attaches built artifacts when you push a tag matching `v*` (for example `v1.0.0`). The release will contain the AAB and APK so users can download directly from GitHub Releases.
+
+How to create a release and publish artifacts via GitHub Actions:
+
+1. Stage and commit any changes you want included in the release:
+
+```bash
+git add .
+git commit -m "release: prepare v1.0.0"
+```
+
+2. Create a semver tag and push it (replace `v1.0.0` with your tag):
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+3. The workflow `.github/workflows/release-upload.yml` will run on the pushed tag, build `assembleRelease` and `bundleRelease`, then create a GitHub Release and attach `app-release.aab` and `app-release.apk`.
+
+4. Visit your repository's Releases page to download the artifacts or share the release URL with users.
+
+Notes:
+- The release artifacts produced by CI are built with the signing configuration in `app/build.gradle`. For production publishing, replace the debug signing with your secure keystore and re-run the release flow.
+- If you prefer to upload artifacts manually, build locally and create a release on GitHub, then use the web UI to attach the APK/AAB.
