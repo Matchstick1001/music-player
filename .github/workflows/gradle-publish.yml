@@ -1,0 +1,40 @@
+name: Build Android APK
+
+on:
+  release:
+    types: [created]
+  # This allows you to also run it manually for testing
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed to attach the APK to your Release
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'gradle' # Automatically caches Gradle to make builds faster
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Build Debug APK
+      # This command generates the app-debug.apk file
+      run: ./gradlew assembleDebug
+
+    - name: Upload APK to Release
+      # This step takes the file from the build folder and puts it on your Release page
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: app/build/outputs/apk/debug/app-debug.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
