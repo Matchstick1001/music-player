@@ -1,0 +1,13 @@
+* text=auto
+*.sh eol=lf
+*.ps1 eol=crlf
+*.bat eol=crlf
+
+# Treat binary files as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.jar binary
+*.keystore binary
+*.jks binary

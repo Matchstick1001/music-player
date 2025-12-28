@@ -1,0 +1,51 @@
+# Android / Gradle
+/.gradle
+/local.properties
+/captures/
+**/build/
+**/out/
+
+# Gradle wrapper - keep the wrapper jar tracked, ignore others
+# Do NOT ignore gradle/wrapper/gradle-wrapper.jar if you want the wrapper committed
+
+# Signing keys
+/*.jks
+/*.keystore
+*.keystore.b64
+
+# IDEs
+/.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# VS Code
+/.vscode/
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+
+# Logs & temp files
+*.log
+*.tmp
+
+# Distribution archives
+*.zip
+*.tar.gz
+
+# Ignore built Gradle wrapper distribution caches
+/gradle/wrapper/dists/
+
+# Ignore local gradle user home if accidentally placed in project
+/.gradle2
+
+# Ignore temporary scripts pattern (keep committed helpers intentionally)
+# If you want to keep all ps1 files, remove the next line
+run_*.ps1
+fix_*.ps1
+run_*.ps1
+
+# Ignore keystore files in repo root
+release.keystore
