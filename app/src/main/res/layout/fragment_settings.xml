@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Playback Settings"
+        android:textStyle="bold"
+        android:textSize="22sp"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="16dp" />
+
+    <Switch
+        android:id="@+id/switch_auto_play"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Auto Play"
+        android:textSize="16sp" />
+
+    <Switch
+        android:id="@+id/switch_loop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loop Track"
+        android:textSize="16sp"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Volume"
+        android:layout_marginTop="24dp"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <SeekBar
+        android:id="@+id/seek_volume"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100" />
+
+</LinearLayout>
