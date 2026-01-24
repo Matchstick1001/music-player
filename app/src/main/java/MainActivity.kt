@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // --- Application class ---
 class FzoApplication : Application()
@@ -46,8 +47,8 @@ data class Song(
 )
 
 data class AppSettings(
-    val autoPlay: Boolean = false,
-    val loopTrack: Boolean = false,
+    val autoPlayAll: Boolean = true,
+    val shuffleEnabled: Boolean = false,
     val volume: Float = 1f
 )
 
@@ -56,16 +57,16 @@ class SettingsRepository(context: Context) {
     private val prefs = context.getSharedPreferences("fzo_settings", Context.MODE_PRIVATE)
 
     fun load(): AppSettings {
-        val autoPlay = prefs.getBoolean("autoPlay", false)
-        val loopTrack = prefs.getBoolean("loopTrack", false)
+        val autoPlayAll = prefs.getBoolean("autoPlayAll", true)
+        val shuffleEnabled = prefs.getBoolean("shuffleEnabled", false)
         val volume = prefs.getFloat("volume", 1f)
-        return AppSettings(autoPlay, loopTrack, volume)
+        return AppSettings(autoPlayAll, shuffleEnabled, volume)
     }
 
     fun save(settings: AppSettings) {
         prefs.edit()
-            .putBoolean("autoPlay", settings.autoPlay)
-            .putBoolean("loopTrack", settings.loopTrack)
+            .putBoolean("autoPlayAll", settings.autoPlayAll)
+            .putBoolean("shuffleEnabled", settings.shuffleEnabled)
             .putFloat("volume", settings.volume)
             .apply()
     }
@@ -90,6 +91,7 @@ class AudioController(private val context: Context) {
     val durationMs: StateFlow<Long> = _durationMs.asStateFlow()
 
     private var progressJob: Job? = null
+    private var songsList: List<Song> = emptyList()
 
     init {
         player.addListener(object : Player.Listener {
@@ -99,6 +101,13 @@ class AudioController(private val context: Context) {
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 _durationMs.value = player.duration.coerceAtLeast(0L)
+            }
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                val index = player.currentMediaItemIndex
+                if (index >= 0 && index < songsList.size) {
+                    _currentSong.value = songsList[index]
+                }
             }
         })
         startProgressUpdates()
@@ -115,10 +124,16 @@ class AudioController(private val context: Context) {
         }
     }
 
-    fun playSong(song: Song) {
-        _currentSong.value = song
-        player.setMediaItem(MediaItem.fromUri(song.url))
+    fun setPlaylist(songs: List<Song>) {
+        this.songsList = songs
+        player.setMediaItems(songs.map { MediaItem.fromUri(it.url) })
         player.prepare()
+    }
+
+    fun playAtIndex(index: Int) {
+        if (index < 0 || index >= songsList.size) return
+        _currentSong.value = songsList[index]
+        player.seekTo(index, 0)
         player.play()
         _isPlaying.value = true
     }
@@ -137,12 +152,31 @@ class AudioController(private val context: Context) {
         player.seekTo(positionMs)
     }
 
+    fun next() {
+        if (player.hasNextMediaItem()) {
+            player.seekToNext()
+        }
+    }
+
+    fun previous() {
+        if (player.hasPreviousMediaItem()) {
+            player.seekToPrevious()
+        }
+    }
+
     fun setVolume(volume: Float) {
         player.volume = volume
     }
 
-    fun setLoopMode(loop: Boolean) {
-        player.repeatMode = if (loop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+    fun setShuffleMode(enabled: Boolean) {
+        player.shuffleModeEnabled = enabled
+    }
+
+    fun setAutoPlayAll(enabled: Boolean) {
+        // enabled = true -> Continuous Play (Don't pause at end)
+        // enabled = false -> Play Single (Pause at end of current song)
+        player.pauseAtEndOfMediaItems = !enabled
+        player.repeatMode = Player.REPEAT_MODE_OFF // User didn't want looping, just linear play
     }
 
     fun release() {
@@ -170,13 +204,14 @@ class AudioViewModel(private val context: Context) : ViewModel() {
     fun refreshSongs() {
         viewModelScope.launch(Dispatchers.IO) {
             val songs = loadSongsFromDevice()
-            _playlist.value = songs
-            if (songs.isNotEmpty()) {
-                val settings = settingsRepository.load()
-                controller.setVolume(settings.volume)
-                controller.setLoopMode(settings.loopTrack)
-                if (settings.autoPlay) {
-                    playSong(songs[0])
+            withContext(Dispatchers.Main) {
+                _playlist.value = songs
+                controller.setPlaylist(songs)
+                if (songs.isNotEmpty()) {
+                    val settings = settingsRepository.load()
+                    controller.setVolume(settings.volume)
+                    controller.setShuffleMode(settings.shuffleEnabled)
+                    controller.setAutoPlayAll(settings.autoPlayAll)
                 }
             }
         }
@@ -184,8 +219,8 @@ class AudioViewModel(private val context: Context) : ViewModel() {
 
     fun playSong(song: Song) {
         val list = _playlist.value
-        currentIndex = list.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
-        controller.playSong(song)
+        val index = list.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
+        controller.playAtIndex(index)
     }
 
     fun togglePlayPause() {
@@ -195,24 +230,17 @@ class AudioViewModel(private val context: Context) : ViewModel() {
     fun play() = controller.play()
     fun pause() = controller.pause()
 
-    fun next() {
-        val list = _playlist.value
-        if (list.isEmpty()) return
-        currentIndex = (currentIndex + 1) % list.size
-        playSong(list[currentIndex])
-    }
-
-    fun previous() {
-        val list = _playlist.value
-        if (list.isEmpty()) return
-        currentIndex = if (currentIndex - 1 < 0) list.size - 1 else currentIndex - 1
-        playSong(list[currentIndex])
-    }
+    fun next() = controller.next()
+    fun previous() = controller.previous()
 
     fun seekTo(positionMs: Long) = controller.seekTo(positionMs)
 
-    fun applyLoop(loop: Boolean) {
-        controller.setLoopMode(loop)
+    fun applyShuffle(enabled: Boolean) {
+        controller.setShuffleMode(enabled)
+    }
+
+    fun applyAutoPlayAll(enabled: Boolean) {
+        controller.setAutoPlayAll(enabled)
     }
 
     fun applyVolume(volume: Float) {
@@ -285,12 +313,12 @@ class SettingsViewModel(private val repo: SettingsRepository) : ViewModel() {
     private val _settings = MutableStateFlow(repo.load())
     val settings: StateFlow<AppSettings> = _settings.asStateFlow()
 
-    fun setAutoPlay(value: Boolean) {
-        update { it.copy(autoPlay = value) }
+    fun setAutoPlayAll(value: Boolean) {
+        update { it.copy(autoPlayAll = value) }
     }
 
-    fun setLoopTrack(value: Boolean) {
-        update { it.copy(loopTrack = value) }
+    fun setShuffleEnabled(value: Boolean) {
+        update { it.copy(shuffleEnabled = value) }
     }
 
     fun setVolume(value: Float) {

@@ -141,15 +141,20 @@ class PlayerFragment : Fragment() {
             }
         }
 
+        val textCurrentTime = view.findViewById<TextView>(R.id.text_current_time)
+        val textTotalTime = view.findViewById<TextView>(R.id.text_total_time)
+
         viewLifecycleOwner.lifecycleScope.launch {
             audioViewModel.durationMs.collectLatest { duration ->
                 seekBar.max = duration.toInt().coerceAtLeast(1)
+                textTotalTime.text = formatTime(duration)
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
             audioViewModel.positionMs.collectLatest { pos ->
                 seekBar.progress = pos.toInt().coerceAtLeast(0)
+                textCurrentTime.text = formatTime(pos)
             }
         }
 
@@ -176,6 +181,13 @@ class PlayerFragment : Fragment() {
         btnPlayPause.setOnClickListener { audioViewModel.togglePlayPause() }
         btnNext.setOnClickListener { audioViewModel.next() }
     }
+
+    private fun formatTime(ms: Long): String {
+        val totalSeconds = ms / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format("%d:%02d", minutes, seconds)
+    }
 }
 
 class SettingsFragment : Fragment() {
@@ -200,19 +212,23 @@ class SettingsFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             settingsViewModel.settings.collectLatest { settings ->
-                switchAuto.isChecked = settings.autoPlay
-                switchLoop.isChecked = settings.loopTrack
+                switchAuto.isChecked = settings.autoPlayAll
+                switchLoop.isChecked = settings.shuffleEnabled
                 seekVolume.progress = (settings.volume * 100).toInt()
             }
         }
 
+        switchAuto.text = "Auto Play All Songs"
+        switchLoop.text = "Shuffle Mode"
+
         switchAuto.setOnCheckedChangeListener { _, isChecked ->
-            settingsViewModel.setAutoPlay(isChecked)
+            settingsViewModel.setAutoPlayAll(isChecked)
+            audioViewModel.applyAutoPlayAll(isChecked)
         }
 
         switchLoop.setOnCheckedChangeListener { _, isChecked ->
-            settingsViewModel.setLoopTrack(isChecked)
-            audioViewModel.applyLoop(isChecked)
+            settingsViewModel.setShuffleEnabled(isChecked)
+            audioViewModel.applyShuffle(isChecked)
         }
 
         seekVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
