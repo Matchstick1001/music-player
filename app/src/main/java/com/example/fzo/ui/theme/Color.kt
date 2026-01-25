@@ -2,44 +2,24 @@ package com.example.fzo.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Moody & Lazy Color Scheme - Fixed Dark Theme
-// No dynamic colors from wallpaper
+// Enhanced FZ0 Player Color Scheme - Dark Only
+val PrimaryLavender = Color(0xFF6C5CE7)
+val AccentCyan = Color(0xFF00D2D3)
+val BackgroundDark = Color(0xFF121214)
+val SurfaceDark = Color(0xFF1E1E24)
+val CardHoverDark = Color(0xFF27272F)
 
-// Background colors - Deep charcoal and midnight blue
-val MoodyBackground = Color(0xFF0F0F13)
-val MoodySurface = Color(0xFF1A1A1F)
-val MoodySurfaceVariant = Color(0xFF252530)
-
-// Accent colors - Muted lavender and soft indigo
-val MoodyPrimary = Color(0xFF7C7CFF)
-val MoodyPrimaryVariant = Color(0xFF5C5CDF)
-val MoodySecondary = Color(0xFF9D9DFF)
-val MoodyTertiary = Color(0xFFB4A7D6)
-
-// Text colors - Off-white for reduced glare
-val MoodyOnBackground = Color(0xFFE0E0E6)
-val MoodyOnSurface = Color(0xFFE0E0E6)
-val MoodyOnSurfaceVariant = Color(0xFFB0B0B6)
-
-val ElectricBlue = Color(0xFF00FFFF)
-val VibrantPurple = Color(0xFFBC13FE)
-val BrightTeal = Color(0xFF00E676)
-val DeepBackground = Color(0xFF121212)
+val OnBackground = Color(0xFFF3F4F6)
+val OnSurface = Color(0xFFE5E7EB)
+val TextGray = Color(0xFF9CA3AF)
 
 val GradientColors = listOf(
-    ElectricBlue,
-    VibrantPurple,
-    BrightTeal,
-    ElectricBlue // Repeat first for smooth loop
+    PrimaryLavender,
+    AccentCyan,
+    PrimaryLavender
 )
-val MoodyOnPrimary = Color(0xFF1A1A1F)
 
-// Error colors
-val MoodyError = Color(0xFFFF6B6B)
-val MoodyOnError = Color(0xFF1A1A1F)
-
-// Container colors
-val MoodyPrimaryContainer = Color(0xFF3D3D7F)
-val MoodyOnPrimaryContainer = Color(0xFFDEDEFF)
-val MoodySecondaryContainer = Color(0xFF3D3D5F)
-val MoodyOnSecondaryContainer = Color(0xFFD4D4F0)
+// Legacy colors compatibility if needed
+val ElectricBlue = AccentCyan
+val VibrantPurple = PrimaryLavender
+val BrightTeal = Color(0xFF00E676)

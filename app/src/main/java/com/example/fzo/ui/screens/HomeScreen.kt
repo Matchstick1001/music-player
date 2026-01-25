@@ -1,5 +1,6 @@
 package com.example.fzo.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,7 +10,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.fzo.AudioViewModel
 import com.example.fzo.ui.components.LoadingAnimation
 import com.example.fzo.ui.components.SongItem
@@ -26,29 +29,43 @@ fun HomeScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 24.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Your Music",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Your Music",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                ),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Text(
+                text = "View All",
+                style = MaterialTheme.typography.labelLarge.copy(
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                ),
+                modifier = Modifier.clickable { /* View All logic */ }
+            )
+        }
 
         when {
             isLoading -> {
-                // Show loading animation while songs are being loaded
                 LoadingAnimation(
                     modifier = Modifier.weight(1f)
                 )
             }
             playlist.isEmpty() -> {
-                // Show empty state when no songs found
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -59,9 +76,8 @@ fun HomeScreen(
                 }
             }
             else -> {
-                // Show song list with overscroll effect
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(playlist) { song ->
@@ -72,9 +88,8 @@ fun HomeScreen(
                         )
                     }
                     
-                    // Bottom padding for mini player
                     item {
-                        Spacer(modifier = Modifier.height(80.dp))
+                        Spacer(modifier = Modifier.height(100.dp))
                     }
                 }
             }

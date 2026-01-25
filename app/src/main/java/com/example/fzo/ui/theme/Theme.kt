@@ -7,37 +7,29 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 
-// Custom "Moody & Lazy" dark color scheme
-// NO dynamic colors from system wallpaper - fixed colors only
-private val MoodyLazyColorScheme = darkColorScheme(
-    primary = MoodyPrimary,
-    onPrimary = MoodyOnPrimary,
-    primaryContainer = MoodyPrimaryContainer,
-    onPrimaryContainer = MoodyOnPrimaryContainer,
+private val FzoColorScheme = darkColorScheme(
+    primary = PrimaryLavender,
+    onPrimary = OnBackground,
+    primaryContainer = PrimaryLavender.copy(alpha = 0.2f),
+    onPrimaryContainer = AccentCyan,
     
-    secondary = MoodySecondary,
-    onSecondary = MoodyOnPrimary,
-    secondaryContainer = MoodySecondaryContainer,
-    onSecondaryContainer = MoodyOnSecondaryContainer,
+    secondary = AccentCyan,
+    onSecondary = BackgroundDark,
+    secondaryContainer = AccentCyan.copy(alpha = 0.1f),
+    onSecondaryContainer = AccentCyan,
     
-    tertiary = MoodyTertiary,
-    onTertiary = MoodyOnPrimary,
+    background = BackgroundDark,
+    onBackground = OnBackground,
     
-    background = MoodyBackground,
-    onBackground = MoodyOnBackground,
+    surface = SurfaceDark,
+    onSurface = OnSurface,
+    surfaceVariant = CardHoverDark,
+    onSurfaceVariant = TextGray,
     
-    surface = MoodySurface,
-    onSurface = MoodyOnSurface,
-    surfaceVariant = MoodySurfaceVariant,
-    onSurfaceVariant = MoodyOnSurfaceVariant,
-    
-    error = MoodyError,
-    onError = MoodyOnError
+    outline = TextGray.copy(alpha = 0.5f)
 )
 
-// Rounded shapes for soft, relaxed aesthetic
-private val MoodyShapes = Shapes(
-    extraSmall = RoundedCornerShape(4.dp),
+private val FzoShapes = Shapes(
     small = RoundedCornerShape(8.dp),
     medium = RoundedCornerShape(12.dp),
     large = RoundedCornerShape(16.dp),
@@ -49,9 +41,9 @@ fun MoodyLazyTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = MoodyLazyColorScheme,
-        typography = MoodyTypography,
-        shapes = MoodyShapes,
+        colorScheme = FzoColorScheme,
+        typography = FzoTypography,
+        shapes = FzoShapes,
         content = content
     )
 }
