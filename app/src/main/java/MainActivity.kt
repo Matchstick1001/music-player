@@ -1,6 +1,7 @@
 package com.example.fzo
 
 import android.Manifest
+import android.util.Log
 import android.app.Application
 import android.content.ContentUris
 import android.content.Context
@@ -9,8 +10,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
@@ -19,8 +21,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.fzo.ui.MainScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.Dispatchers
@@ -72,10 +73,14 @@ class SettingsRepository(context: Context) {
     }
 }
 
+
+// ... (existing imports)
+
 // --- Audio controller using ExoPlayer ---
 class AudioController(private val context: Context) {
+    private val TAG = "FZO:AudioController"
     private val player: ExoPlayer = ExoPlayer.Builder(context).build()
-
+    
     private val scope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
 
     private val _currentSong = MutableStateFlow<Song?>(null)
@@ -96,18 +101,25 @@ class AudioController(private val context: Context) {
     init {
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                Log.d(TAG, "onIsPlayingChanged: $isPlaying")
                 _isPlaying.value = isPlaying
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
+                Log.d(TAG, "onPlaybackStateChanged: $playbackState")
                 _durationMs.value = player.duration.coerceAtLeast(0L)
             }
 
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                Log.d(TAG, "onMediaItemTransition: reason=$reason")
                 val index = player.currentMediaItemIndex
                 if (index >= 0 && index < songsList.size) {
                     _currentSong.value = songsList[index]
                 }
+            }
+            
+            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                Log.e(TAG, "onPlayerError: ${error.message}", error)
             }
         })
         startProgressUpdates()
@@ -132,6 +144,7 @@ class AudioController(private val context: Context) {
 
     fun playAtIndex(index: Int) {
         if (index < 0 || index >= songsList.size) return
+        Log.d(TAG, "playAtIndex: $index")
         _currentSong.value = songsList[index]
         player.seekTo(index, 0)
         player.play()
@@ -139,11 +152,13 @@ class AudioController(private val context: Context) {
     }
 
     fun play() {
+        Log.d(TAG, "play")
         player.play()
         _isPlaying.value = true
     }
 
     fun pause() {
+        Log.d(TAG, "pause")
         player.pause()
         _isPlaying.value = false
     }
@@ -193,6 +208,9 @@ class AudioViewModel(private val context: Context) : ViewModel() {
 
     private val _playlist = MutableStateFlow<List<Song>>(emptyList())
     val playlistFlow: StateFlow<List<Song>> = _playlist.asStateFlow()
+    
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     val currentSong: StateFlow<Song?> = controller.currentSong
     val isPlaying: StateFlow<Boolean> = controller.isPlaying
@@ -203,6 +221,7 @@ class AudioViewModel(private val context: Context) : ViewModel() {
 
     fun refreshSongs() {
         viewModelScope.launch(Dispatchers.IO) {
+            _isLoading.value = true
             val songs = loadSongsFromDevice()
             withContext(Dispatchers.Main) {
                 _playlist.value = songs
@@ -213,6 +232,7 @@ class AudioViewModel(private val context: Context) : ViewModel() {
                     controller.setShuffleMode(settings.shuffleEnabled)
                     controller.setAutoPlayAll(settings.autoPlayAll)
                 }
+                _isLoading.value = false
             }
         }
     }
@@ -353,50 +373,32 @@ class SettingsViewModelFactory(private val context: Context) : ViewModelProvider
     }
 }
 
-// --- Activity & simple UI wiring ---
+// --- Activity & Compose UI ---
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
     private val audioViewModel: AudioViewModel by viewModels { AudioViewModelFactory(this) }
     private val settingsViewModel: SettingsViewModel by viewModels { SettingsViewModelFactory(this) }
 
+    private val TAG = "FZO:MainActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        val toolbar: MaterialToolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.title = "FZO"
-
-        // Bottom navigation between Home and Settings
-        val bottomNav: BottomNavigationView = findViewById(R.id.bottom_nav)
-        bottomNav.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_home -> {
-                    supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.container, HomeFragment.newInstance())
-                        .commit()
-                    true
-                }
-                R.id.nav_settings -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.container, SettingsFragment())
-                        .addToBackStack("settings")
-                        .commit()
-                    true
-                }
-                else -> false
-            }
-        }
-
+        Log.d(TAG, "onCreate")
+        
         ensureAudioPermissionAndLoad()
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, HomeFragment.newInstance())
-                .commitNow()
+        
+        setContent {
+            MainScreen(
+                audioViewModel = audioViewModel,
+                settingsViewModel = settingsViewModel
+            )
         }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume")
     }
 
     private fun ensureAudioPermissionAndLoad() {
@@ -413,9 +415,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<out String>,
+        permissions: Array<String>,
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
