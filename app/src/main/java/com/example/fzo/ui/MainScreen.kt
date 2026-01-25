@@ -1,11 +1,13 @@
 package com.example.fzo.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -17,7 +19,9 @@ import com.example.fzo.ui.navigation.Screen
 import com.example.fzo.ui.navigation.bottomNavItems
 import com.example.fzo.ui.screens.*
 import com.example.fzo.ui.theme.MoodyLazyTheme
-import com.example.fzo.ui.components.AnimatedAppTitle
+import com.example.fzo.ui.theme.FredokaOneFont
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,10 +37,27 @@ fun MainScreen(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 TopAppBar(
-                    title = { AnimatedAppTitle() },
+                    title = {
+                        Text(
+                            text = "FZ0 Player",
+                            fontFamily = FredokaOneFont,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 28.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    },
+                    actions = {
+                        IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search",
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.secondary
                     )
                 )
             },
@@ -45,17 +66,24 @@ fun MainScreen(
                     // Mini Player above bottom navigation
                     val currentSong by audioViewModel.currentSong.collectAsState()
                     val isPlaying by audioViewModel.isPlaying.collectAsState()
+                    val positionMs by audioViewModel.positionMs.collectAsState()
+                    val durationMs by audioViewModel.durationMs.collectAsState()
 
                     MiniPlayer(
                         currentSong = currentSong,
                         isPlaying = isPlaying,
+                        positionMs = positionMs,
+                        durationMs = durationMs,
                         onPlayPauseClick = { audioViewModel.togglePlayPause() },
+                        onPreviousClick = { audioViewModel.previous() },
+                        onNextClick = { audioViewModel.next() },
                         onMiniPlayerClick = { showPlayerSheet = true }
                     )
 
                     // Bottom Navigation
                     NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.background,
+                        tonalElevation = 0.dp
                     ) {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
@@ -79,7 +107,7 @@ fun MainScreen(
                                     selectedTextColor = MaterialTheme.colorScheme.primary,
                                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                                 )
                             )
                         }
@@ -97,6 +125,9 @@ fun MainScreen(
                 }
                 composable(Screen.Settings.route) {
                     SettingsScreen(settingsViewModel = settingsViewModel)
+                }
+                composable(Screen.Search.route) {
+                    SearchScreen()
                 }
             }
         }

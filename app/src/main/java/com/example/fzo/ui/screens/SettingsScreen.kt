@@ -1,7 +1,9 @@
 package com.example.fzo.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -11,10 +13,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.fzo.SettingsViewModel
+import com.example.fzo.ui.components.FzoSwitch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     settingsViewModel: SettingsViewModel,
@@ -27,110 +32,149 @@ fun SettingsScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(16.dp)
+            .padding(horizontal = 24.dp)
     ) {
         Text(
             text = "Settings",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.displaySmall.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp
+            ),
+            modifier = Modifier.padding(vertical = 24.dp),
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
-
         // Playback Settings Section
-        SettingsSectionTitle("Playback")
+        SettingsSectionHeader("Playback")
         
-        // Auto Play Switch
-        SettingsSwitchItem(
-            title = "Auto Play All",
-            subtitle = "Continue playing next song automatically",
-            checked = settings.autoPlayAll,
-            onCheckedChange = { settingsViewModel.setAutoPlayAll(it) }
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Column(modifier = Modifier.padding(8.dp)) {
+                SettingsSwitchItem(
+                    title = "Auto Play All",
+                    subtitle = "Continue playing next song automatically",
+                    checked = settings.autoPlayAll,
+                    onCheckedChange = { settingsViewModel.setAutoPlayAll(it) }
+                )
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Divider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                )
 
-        // Shuffle Switch
-        SettingsSwitchItem(
-            title = "Shuffle",
-            subtitle = "Play songs in random order",
-            checked = settings.shuffleEnabled,
-            onCheckedChange = { settingsViewModel.setShuffleEnabled(it) }
-        )
+                SettingsSwitchItem(
+                    title = "Shuffle",
+                    subtitle = "Play songs in random order",
+                    checked = settings.shuffleEnabled,
+                    onCheckedChange = { settingsViewModel.setShuffleEnabled(it) }
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Audio Settings Section
-        SettingsSectionTitle("Audio")
+        SettingsSectionHeader("Audio")
 
-        // Volume Slider
-        Text(
-            text = "Volume",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Slider(
-            value = settings.volume,
-            onValueChange = { settingsViewModel.setVolume(it) },
-            valueRange = 0f..1f,
-            steps = 10,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-        Text(
-            text = "${(settings.volume * 100).toInt()}%",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.align(Alignment.End)
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Volume",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "${(settings.volume * 100).toInt()}%",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                }
 
-        Spacer(modifier = Modifier.height(32.dp))
+                Slider(
+                    value = settings.volume,
+                    onValueChange = { settingsViewModel.setVolume(it) },
+                    valueRange = 0f..1f,
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    ),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         // App Info Section
-        SettingsSectionTitle("About")
+        SettingsSectionHeader("About")
         
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp)
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = "FZO Player",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        text = "FZ0 Player",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "Version 1.0.0",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         }
         
-        // Bottom padding for mini player
-        Spacer(modifier = Modifier.height(100.dp))
+        Spacer(modifier = Modifier.height(120.dp))
     }
 }
 
 @Composable
-fun SettingsSectionTitle(title: String) {
+fun SettingsSectionHeader(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 8.dp)
+        style = MaterialTheme.typography.titleMedium.copy(
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold
+        ),
+        modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
     )
 }
 
@@ -144,23 +188,23 @@ fun SettingsSwitchItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Switch(
+        FzoSwitch(
             checked = checked,
             onCheckedChange = onCheckedChange
         )
