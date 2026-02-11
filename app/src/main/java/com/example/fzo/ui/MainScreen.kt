@@ -12,8 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.fzo.AudioViewModel
-import com.example.fzo.SettingsViewModel
+import com.example.fzo.viewmodel.AudioViewModel
+import com.example.fzo.viewmodel.SettingsViewModel
 import com.example.fzo.ui.components.MiniPlayer
 import com.example.fzo.ui.navigation.Screen
 import com.example.fzo.ui.navigation.bottomNavItems

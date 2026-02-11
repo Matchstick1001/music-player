@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fzo.AudioViewModel
+import com.example.fzo.viewmodel.AudioViewModel
 import com.example.fzo.ui.components.LoadingAnimation
 import com.example.fzo.ui.components.SongItem
 

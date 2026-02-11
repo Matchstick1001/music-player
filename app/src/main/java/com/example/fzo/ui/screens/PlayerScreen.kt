@@ -19,8 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.example.fzo.AudioViewModel
-import com.example.fzo.Song
+import com.example.fzo.viewmodel.AudioViewModel
+import com.example.fzo.data.Song
 
 @Composable
 fun PlayerScreen(

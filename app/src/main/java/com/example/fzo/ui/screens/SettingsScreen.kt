@@ -17,7 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.fzo.SettingsViewModel
+import com.example.fzo.viewmodel.SettingsViewModel
 import com.example.fzo.ui.components.FzoSwitch
 
 @Composable
